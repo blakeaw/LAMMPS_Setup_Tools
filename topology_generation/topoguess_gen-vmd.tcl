@@ -1,28 +1,37 @@
 ########################################################
-## VMD Tcl script to convert psf data into setup_lammps 
-## compatible topology file
-## To use: load only the psf file into VMD and then run this script
+## VMD Tcl script to generate a setup_lammps 
+## compatible topology file - this script uses the 
+## topotools package to guess all the bonds, anlges, etc. 
+## and outputs them in a .top format suitable for setup_lammps
+## To use: load the coordinate file into VMD and then run this script
 ##
 ## Blake Wilson 
 ## blake.wilson@utdallas.edu
 ##
 ##################################################
 
-set outname "out_test.top"
+package require topotools
+
+set outname "out_topoguess.top"
 
 set outfile [open $outname w]
 
+#use topotools package to guess the correct bonds, angles, etc.
+topo guessbonds
+topo guessangles
+topo guessdihedrals
+topo guessimpropers
 
 #get the index arrays
-
-
-
+set blist [topo getbondlist]
+set alist [topo getanglelist]
+set dlist [topo getdihedrallist]
+set ilist [topo getimproperlist]
 
 set sel [atomselect top all]
-# total number of atoms
 set N [$sel num]
-$sel delete
-######## output atoms
+
+#output atoms
 puts "getting atoms.."
 for {set i 0} {$i < $N} {incr i} {
 	set A [atomselect top "index $i"]
@@ -33,18 +42,14 @@ for {set i 0} {$i < $N} {incr i} {
 	set amass [$A get mass]
 	set acharge [$A get charge]
 	puts $outfile "atom        $index    $aresname    $aname $atype      $amass $acharge    $aresname"    
-    $A delete 
 }
 
 puts $outfile " " 
 puts $outfile " "
-# bond list - oddly there is no molinfo for the bond list,
-# so use the topo tool one
-set blist [topo getbondlist]
-######### output bonds
+
+#output bonds
 puts "getting bonds.."
 set nb [llength $blist]
-puts "$nb bonds"
 for {set i 0} {$i < $nb} {incr i} {
 	set B [lindex $blist $i]
 	puts $outfile "bond    [expr [lindex $B 0] + 1]    [expr [lindex $B 1] + 1]"
@@ -52,40 +57,22 @@ for {set i 0} {$i < $nb} {incr i} {
 }
 puts $outfile " "
 puts $outfile " "
-unset blist
-######### output angles
+#output angles
 puts "getting angles.."
-# angle list
-set alist [molinfo top get angles]
-set na [llength [lindex $alist 0]]
-#check for empty angle list
-set nfl [llength [lindex [lindex $alist 0] 0] ]
-if {$nfl==0} {
-	set na 0
-}
-puts "$na angles"
+set na [llength $alist]
 for {set i 0} {$i < $na} {incr i} {
-	set A [lindex [lindex $alist 0] $i]
+	set A [lindex $alist $i]
 	puts $outfile "angle    [expr [lindex $A 1] + 1]    [expr [lindex $A 2] + 1]    [expr [lindex $A 3] + 1]"
 
 
 }
-unset alist
 puts $outfile " "
 puts $outfile " "
-####### output dihedrals
+#output dihedrals
 puts "getting dihedrals.."
-# dihedral list
-set dlist [molinfo top get dihedrals]
-set nd [llength [lindex $dlist 0] ]
-#check for empty dihedral list
-set nfl [llength [lindex [lindex $dlist 0] 0] ]
-if {$nfl==0} {
-	set nd 0
-}
-puts "$nd dihedrals"
+set nd [llength $dlist]
 for {set i 0} {$i < $nd} {incr i} {
-	set D [lindex [lindex $dlist 0] $i]
+	set D [lindex $dlist $i]
 	set a1 [expr [lindex $D 1] + 1]
 	set a2 [expr [lindex $D 2] + 1]
 	set a3 [expr [lindex $D 3] + 1]
@@ -93,23 +80,13 @@ for {set i 0} {$i < $nd} {incr i} {
 	puts $outfile "dihedral      $a1    $a2    $a3    $a4"
 
 }
-unset dlist
 puts $outfile " "
 puts $outfile " "
-
-#######output impropers
+#output impropers
 puts "getting impropers.."
-# improper list
-set ilist [molinfo top get impropers]
-set ni [llength [lindex $ilist 0]]
-#check for empty improper list
-set nfl [llength [lindex [lindex $ilist 0] 0] ]
-if {$nfl==0} {
-	set ni 0
-}
-puts "$ni impropers"
+set ni [llength $ilist]
 for {set i 0} {$i < $ni} {incr i} {
-	set I [lindex [lindex $ilist 0] $i]
+	set I [lindex $ilist $i]
 	set a1 [expr [lindex $I 1] + 1]
 	set a2 [expr [lindex $I 2] + 1]
 	set a3 [expr [lindex $I 3] + 1]
@@ -117,6 +94,6 @@ for {set i 0} {$i < $ni} {incr i} {
 	puts $outfile "improper      $a1    $a2    $a3    $a4"
 
 }
-unset ilist
+
 puts "check output: $outname"
 close $outfile
