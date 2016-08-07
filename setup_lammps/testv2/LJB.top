@@ -1,0 +1,5 @@
+atom      1   LJ         B   B        1000.000  0.0000   LJ
+bond 1 1
+angle 1 1 1
+dihedral 1 1 1 1
+improper 1 1 1 1

@@ -1,0 +1,31 @@
+#pair L   L  1.000  1.0000 # L L
+#pair L L 1 1
+dstyle testerstyle
+npairargs 3
+pair L L morse.table ENTRY 10 # TEST!
+pair B B test 5 9
+pair A A atest 10 11
+pair A B abt 3 5
+
+bond L  L 0.1 0.1
+angle L L L 2 2 2 2
+dihedral L L L L 3 3
+nimproperargs 3
+improper L L L L 4 BOOGIE! 9
+
+bond A  A 0.1 0.1
+angle A A A 2 2 2 2
+dihedral A A A A 3 3
+nimproperargs 3
+improper A A A A 4 BOOGIE! 9
+
+bond B  B 0.1 0.1
+angle B B B 2 2 2 2
+ndihedralargs 3
+dihedral B B B B 3 3 4
+nimproperargs 3
+improper B B B B 4 BOOGIE! 9
+
+npatchbonds 1
+patchbond A B 2.0 3 3
+patchbond A A 3.0 4 4

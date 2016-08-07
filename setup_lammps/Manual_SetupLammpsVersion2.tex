@@ -1,0 +1,225 @@
+\documentclass[12pt,letterpaper,]{article}
+\usepackage[latin1]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage[pdftex]{graphicx}
+\usepackage{times}
+\usepackage{natbib}
+\usepackage{float}
+
+\usepackage{setspace} % blake
+\doublespacing % blake
+%\usepackage{fullpage}
+
+% To change the Reference List to the Way ACS Symposium Books Wants
+\bibpunct{}{}{,}{n}{,}{,}	% changes the [] in the text to ()
+\setlength{\bibsep}{0pt}		% changes to single line spacing in the REF list
+\renewcommand{\bibnumfmt}[1]{\em #1.}  % changes 
+%\renewcommand{\citenumfont}[1]{\em #1}
+
+\setcounter{tocdepth}{4}
+\pagestyle{empty}
+%% For ACS Camera Ready Format
+\textwidth = 6.5in
+\textheight = 8.0in
+\footskip = 1.0in
+% top margin 2 inches
+\voffset = 0.5in	
+\topmargin = 0 in
+\headheight = 0 in
+\headsep = 0 in
+
+% left margin 1 inches
+\hoffset = 0 in 
+\oddsidemargin = 0 in
+
+% Paragraph indent
+\parindent = 0.25 in 
+
+%typical equation array
+\newcommand{\be}{\begin{equation}}
+\newcommand{\ee}{\end{equation}}
+% a typical figure
+\newcommand{\bfig}{\begin{figure}}
+\newcommand{\efig}{\end{figure}}
+% a figure that is not bound by a single column in multicolumn articles
+\newcommand{\bfigw}{\begin{figure*}}
+\newcommand{\efigw}{\end{figure*}}
+% use for long multiple line equations
+\newcommand{\bml}{\begin{equation} \begin{split}}
+\newcommand{\eml}{\end{split} \end{equation}}
+% used for split equivalence in multiple lines
+\newcommand{\bs}{\begin{split}}
+\newcommand{\es}{\end{split}}
+
+\newcommand{\npgh}{\paragraph{}}
+
+\newcommand{\hlt}[1]{\textcolor{red}{\textit{#1}}}
+\newcommand{\inb}[1]{\textcolor{blue}{\textbf{#1}}}
+\begin{document}
+
+
+\pagestyle{plain}
+\pagenumbering{roman}
+\title{Manual for setup\_lammps\_v2 program.}
+\maketitle
+%\newpage
+\pagestyle{plain}
+\pagenumbering{arabic}
+\section{Info}
+Author: Blake Wilson - blake.wilson@utdallas.edu \\
+ For questions, comments, or to report a problem, please contact me at the
+provided e-mail address. If compiling from source the recommended compilation (using gcc) is:\\
+gcc -O2 setup\_lammps\_v2.c -o setup\_lammps\_v2
+
+\section{Introduction}
+setup\_lammps\_v2 is an updated version of the program setup\_lammps, which parses topology files, a parameter database, and a coordinate file and outputs the DATA and PARM files for use with LAMMPS. This manual will go over the usage and features of the setup\_lammps\_v2 program.
+\section{Basic Usage}
+The basic usage is:\\
+\\
+setup\_lammps\_v2 $<topfile_1> <nmol_1> [ <topfile_2> <nmol_2> ..... <topfile_n> <nmol_n>] <param-file> <coordfile-type> <coordfile>$\\
+\\
+ $<topfile_1> <nmol_1> [ <topfile_2> <nmol_2> ..... <topfile_n> <nmol_n>]$ is the list of topology files (topfile) and nmol is the number of copies of molecules to be assigned that topology. $<param-file>$ is parameter database file, which contains the parameters for all the pair-wise, bonding, angle, dihedral, and improper interactions. $<coordfile-type>$ is the type type of your coordinate file. setup\_lammps\_v2 can read 3 different coordinate file types including pdb, xyz, and gcd. the The basic usage can also be displayed from the program by executing it without any arguments. NOTE: The order of topology files and copies should match the order of atoms corresponding to those topologies in the 
+coordinate file (or vice versa). 
+\section{Topology Files}
+The topology file is like a blueprint of your molecular unit which has all the type and connectivity data. The topology 
+file contains multiple sections. These are: atom, bond, angle, dihedral, and improper. The atom section contains atom lines which index the atoms, list the atom types, mass, charges, etc. The format is as follows:\\
+\\
+atom     (index)  (res name)     (res type) (atom type)      (mass)   (charge)  (seg id)\\
+\\
+The setup program only uses (atom type), (mass), and (charge), so these need to properly set. The atom types should be consistent between the topology and parameter database files. The next section in the topology file is the bond section
+which contains bond lines. These have format:\\
+\\
+bond (index of bond atom 1) (index of bond atom 2)
+\\
+The angle, dihedral, and improper sections follow a similar format to the bond section. Angle:\\
+\\
+angle (index of angle atom 1) (index of angle atom 2) (index of angle atom 3)\\
+\\
+Dihedral:\\
+\\
+dihedral (index of dihedral atom 1) (index of dihedral atom 2) (index of dihedral atom 3) (index of dihedral atom 4)\\
+\\
+Improper:\\
+\\
+dihedral (index of improper atom 1) (index of improper atom 2) (index of improper atom 3) (index of improper atom 4)\\
+\\
+\\
+An example is the water topology:
+\begin{verbatim}
+atom        1    OH    OT OT      15.99899959564209 -0.830    OH
+atom        2    OH    HT HT      1.0080000162124634 0.415    OH
+atom        3    OH    HT HT      1.0080000162124634 0.415    OH
+ 
+bond    1    2
+bond    1    3
+ 
+angle    2    1    3
+\end{verbatim}
+
+\section{Parameter Database}
+The basic parameter database (typically named parm.database) will contain sections listing pair-wise interations, bonds, angles, dihedrals, and impropers with their parameters for all the unique types of these interactions. The commands are:
+ `pair' command withformat:\\
+pair (atom type 1) (atom type 2) $<parameter args>$
+\\
+ `bond' command withformat:\\
+bond (atom type 1) (atom type 2) $<parameter args>$
+\\
+ `angle' command withformat:\\
+angle (atom type 1) (atom type 2) (atom type 3) $<parameter args>$
+\\
+ `dihedral' command withformat:\\
+dihedral (atom type 1) (atom type 2) (atom type 3)  (atom type 4) $<parameter args>$
+\\
+ `improper' command withformat:\\
+improper (atom type 1) (atom type 2) (atom type 3)  (atom type 4) $<parameter args>$
+\\
+A simple example is the database for CHARMM water (note that this corresponds to the water topology example and that the atom types match the definitions in the topology):
+\begin{verbatim}
+pair  OT    OT     0.1020   3.1880  
+pair  HT    OT    -0.0000   1.5940
+pair  HT    HT     0.0000   0.0000
+
+bond   OT   HT       450.00 0.9572
+
+angle  HT   OT   HT  55.000 104.52 0.0 0.0
+\end{verbatim}
+\\
+In addition to the basic commands, the parsing of the parameter database has been updated and some additional database commands added.
+The LAMMPS styles can now be explicitly defined in the paramter database using the new style commands :\\
+\begin{table}[h]
+\centering
+\begin{tabular}{|l | p{14cm} |}
+\hline
+pstyle & The pstyle command is used to explicitly define the LAMMPS pair\_style that is to be used. e.g. `pstyle lj/cut 2.5' will generate the generate the line `pair\_style lj/cut 2.5' in the PARM.FILE. DEFAULT=`lj/cut/coul/long 10' \\ \hline
+bstyle & The bstyle command is used to explicitly define the LAMMPS bond\_style that is to be used. e.g. `bstyle harmonic' will generate the generate the line `bond\_style harmonic' in the PARM.FILE. DEFAULT$=$`harmonic' \\ \hline
+astyle & The astyle command is used to explicitly define the LAMMPS angle\_style that is to be used. e.g. `astyle harmonic' will generate the generate the line `angle\_style harmonic' in the PARM.FILE. DEFAULT$=$`charmm' \\ \hline
+dstyle &  The dstyle command is used to explicitly define the LAMMPS dihedral\_style that is to be used. e.g. `dstyle harmonic' will generate the generate the line `dihedral\_style harmonic' in the PARM.FILE. DEFAULT$=$`charmm'\\ \hline
+istyle & The istyle command is used to explicitly define the LAMMPS improper\_style that is to be used. e.g. `istyle harmonic' will generate the generate the line `improper\_style harmonic' in the PARM.FILE. DEFAULT$=$`harmonic' \\ \hline
+kstyle & The kstyle command is used to explicitly define the LAMMPS kspace\_style that is to be used. e.g. `kstyle pppm 0.0001' will generate the generate the line `kspace\_style pppm 0.0001' in the PARM.FILE. DEFAULT$=$`ewald 0.0001' \\ \hline
+sbonds & The sbonds command is used to explicitly define the LAMMPS special\_bonds style that is to be used. e.g. `sbonds lj/coul 0 1 1 extra 2' will generate the generate the line `special\_bonds lj/coul 0 1 1 extra 2' in the PARM.FILE. DEFAULT1(if number of impropers$=$0)$=$`lj 0.0 0.0 0.0'  DEFAULT2(if number of impropers$>$0)$=$`lj 0.0 0.0 1.0'\\ \hline
+\end{tabular}
+\end{table} \\
+\\
+The number of parameter arguments for each type of interaction (pair, bond, etc.) can now also be explicity
+defined (with a maximum of 10 arguments) using the new commands:
+\begin{table}[h!]
+\centering
+\begin{tabular}{|l | p{14cm} |}
+\hline
+npairargs & npairargs is used before a set of `pair' listings to set the number of parameter arguments to be used for that
+set of pair interactions. e.g. `npairargs 4' sets the number of parameter arguments to 4. All subsequent `pair' definitions will be expected to have 4 parameters listed. Multiple npairargs commands can be defined throughout the pair listings, which could be used for hybrid systems that require different numbers of parameters for the different pair interaction styles that are used. DEFAULT=2 \\ \hline
+nbondargs & nbondargs is used before a set of `bond' listings to set the number of parameter arguments to be used for that set of bond interactions. e.g. `nbondargs 3' sets the number of parameter arguments to 3. All subsequent `bond' definitions will be expected to have 3 parameters listed. Multiple nbondargs commands can be defined throughout the bond listings, which could be used for hybrid systems that require different numbers of parameters for the different bond styles that are used. DEFAULT=2 \\ \hline
+nangleargs & nangleargs is used before a set of `anlge' listings to set the number of parameter arguments to be used for that set of anlge interactions. e.g. `nanlgeargs 2' sets the number of parameter arguments to 2. All subsequent `angle' definitions will be expected to have 2 parameters listed. Multiple nanlgeargs commands can be defined throughout the angle listings, which could be used for hybrid systems that require different numbers of parameters for the different bond styles that are used. DEFAULT=4\\ \hline
+ndihedralargs & ndihedralargs is used before a set of `dihedral' listings to set the number of parameter arguments to be used for that set of dihedral interactions. e.g. `ndihedralargs 3' sets the number of parameter arguments to 3. All subsequent `dihedral' definitions will be expected to have 3 parameters listed. Multiple ndihedralargs commands can be defined throughout the dihedral listings, which could be used for hybrid systems that require different numbers of parameters for the different dihedral styles that are used. DEFAULT=2 \\ \hline
+nimproperargs & nimproperargs is used before a set of `improper' listings to set the number of parameter arguments to be used for that set of improper interactions. e.g. `nimproperargs 3' sets the number of parameter arguments to 3. All subsequent `improper' definitions will be expected to have 3 parameters listed. Multiple nimproperargs commands can be defined throughout the improper listings, which could be used for hybrid systems that require different numbers of parameters for the different improper styles that are used. DEFAULT=2 \\ \hline
+\end{tabular}
+\end{table} 
+\newpage
+\\
+The water example can be updated to use some of the new commands :
+\begin{verbatim}
+npairargs 2
+pair  OT    OT     0.1020   3.1880  
+pair  HT    OT    -0.0000   1.5940
+pair  HT    HT     0.0000   0.0000
+
+nbondargs 2
+bond   OT   HT       450.00 0.9572
+nanagleargs 2
+angle  HT   OT   HT  55.000 104.52
+\end{verbatim}
+\\
+This water example is updated to use hybrid pair interactions :
+\begin{verbatim}
+pstyle hybrid lj/cut/coul/long 10 table linear 1000 
+
+npairargs 5
+pair  OT    OT  lj/cut/coul/long   0.1020   3.1880  10.0 15.0
+npairargs 3
+pair  HT    OT  table   tableHT_OT.tab ENTRY1
+pair  HT    HT  table   tableHT_HT.tab ENTRY1
+
+nbondargs 2 
+bond   OT   HT       450.00 0.9572
+nanagleargs 2
+angle  HT   OT   HT  55.000 104.52
+\end{verbatim}
+\\
+Note that in the hybrid system the style should be listed as the first parameter argument. 
+
+\section{Coordinate Files}
+setup\_lammps\_v2 is able to read three different coordinate file types. They are pdb, xyz, and gcd. The pdb and xyz formats are standard formats. However, the gcd is a file with only coordinates. It is the simplest coordinate file type with format:
+\begin{verbatim}
+x1 y1 z2
+x2 y2 z2
+........
+........
+xn yn zn
+\end{verbatim}
+
+Only the pdb format contains readable box size data. If the box sizes are not defined in the pdb file, or if another coordinate type is used, setup\_lammps\_v2 uses a simple
+routine to guess the box sizes using the provided coordinates plus some additional padding. 
+
+\end{document}

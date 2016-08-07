@@ -1,0 +1,20 @@
+# Yukawa style potential for screened electrostatics
+# has paramters prefactor(energy) and kappa (1/distance)
+class YUKAWA:
+
+	def __init__(self):
+		#Define Params and set some default values
+		self.prefactor=1.0
+		self.kappa = 1.0
+
+	def SetParams(self, pref, kap):
+		self.prefactor=pref
+		self.kappa = kap
+		return
+
+	def U(self, r):
+		return (self.prefactor/self.kappa)*exp(-self.kappa*r)/r
+
+	def F(self, r):
+		return (self.prefactor)*exp(-self.kappa*r)/r + (self.prefactor/self.kappa)*exp(-self.kappa*r)/r**2
+
